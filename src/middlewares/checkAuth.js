@@ -2,28 +2,36 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 
 class CheckAuth {
-    static checkAuth = async (req, res, next) => {
-        try {
-            const authHeader = req.headers.authorization;
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                return res.status(401).json({ message: 'No token provided' });
-            }
-            const token = authHeader.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET)
+  static checkAuth = async (req, res, next) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "No token provided" });
+      }
+      const token = authHeader.split(" ")[1];
+      console.log("Token received:", token);
 
-            const user = await userAccount.findById(decoded.userId);
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET || "your-secret-key"
+      );
+      console.log("Token decoded:", decoded);
 
-            if (!user){
-                return res.status(404).json({message: 'User not found'})
-            }
+      const user = await User.findById(decoded.userId);
 
-            req.user = user;
-            next();
-        } catch (error) {
-            return res.status(401).json({message: 'Unauthorized'})
-        }
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      req.user = user;
+      next();
+    } catch (error) {
+      console.log("Auth error:", error.message);
+      return res
+        .status(401)
+        .json({ message: "Unauthorized", error: error.message });
     }
-    //hạn chế query db bằng middlewares (chỉ nên validate, log,...)
+  };
 }
 
 export default CheckAuth;

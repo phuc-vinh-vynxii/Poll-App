@@ -2,6 +2,7 @@ import User from "../models/user.model.js";
 import { NotFoundError } from "../handlers/error.response.js";
 import crypto from "crypto";
 import sendMail from "../utils/sendMail.js";
+import mailService from "../services/mail.service.js";
 
 export default class AuthService {
   static async getUserById(id) {
@@ -28,16 +29,16 @@ export default class AuthService {
       user.passwordResetToken = passwordResetToken;
       user.passwordResetExpiration = passwordResetExpiration;
       const updateStatus = await user.save();
-
       if (!updateStatus) {
-        await mailService.sendEmail({
-          emailFrom: "admin@gmail.com",
-          emailTo: email,
-          emailSubject: "Password Reset",
-          emailText: `Here is your reset token: ${passwordResetToken}`,
-        });
-        return res.status(200).json({ message: "Reset email sent" });
+        throw new NotFoundError("User not found", 404);
       }
+
+      await mailService.sendEmail({
+        emailFrom: "admin@gmail.com",
+        emailTo: email,
+        emailSubject: "Password Reset",
+        emailText: `Here is your password reset token: ${passwordResetToken}`, // gửi raw token, không hash
+      });
 
       return {
         status: 200,

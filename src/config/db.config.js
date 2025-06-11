@@ -1,19 +1,34 @@
-import mongoose from 'mongoose';
-import Vote from '../models/vote.model.js';
+import mongoose from "mongoose";
+import dotenv from "dotenv";
 
-const connectDB = async () => { 
+dotenv.config();
+const connectionString = process.env.MONGODB_URI;
+
+class Database {
+  constructor() {
+    this.connect();
+  }
+
+  async connect() {
     try {
-        await mongoose.connect(process.env.MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log("MongoDB connected");
-        await Vote.createIndexes();
-        console.log("Indexes created for Vote model");
-    } catch (error) {
-        console.error("MongoDB connection error:", error.message);
-        process.exit(1);
-    }
-};
+      console.log("MONGODB_URI:", connectionString);
+      mongoose.set("debug", true);
+      mongoose.set("debug", { color: true });
+      await mongoose.connect(connectionString);
 
-export default connectDB;
+      console.log("MongoDB connected");
+    } catch (error) {
+      console.log("MongoDB connection error:", error.message);
+    }
+  }
+
+  static getInstance() {
+    if (!Database.instance) {
+      Database.instance = new Database();
+    }
+    return Database.instance;
+  }
+}
+
+const instanceMongoDB = Database.getInstance();
+export default instanceMongoDB;

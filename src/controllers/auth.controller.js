@@ -6,7 +6,8 @@ import AuthService from "../services/auth.service.js";
 export default class AuthController {
   static register = async (req, res) => {
     try {
-      const { fullName, address, email, password, gender, phone, age } = req.body;
+      const { fullname, address, email, password, gender, phone, age } =
+        req.body;
 
       const existingUser = await User.findOne({ email });
       if (existingUser) {
@@ -16,13 +17,13 @@ export default class AuthController {
       const hashedPassword = await hashPassword(password);
 
       const user = new User({
-        fullName,
+        fullname,
         address,
         email,
         password: hashedPassword,
         gender,
         phone,
-        age
+        age,
       });
 
       await user.save();
@@ -30,10 +31,10 @@ export default class AuthController {
       return res.status(201).json({
         message: "User registered successfully",
         data: {
-            id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-        }
+          id: user._id,
+          fullname: user.fullname,
+          email: user.email,
+        },
       });
     } catch (error) {
       res
@@ -84,7 +85,6 @@ export default class AuthController {
           role: user.role,
         },
         accessToken,
-        refreshToken,
       });
     } catch (error) {
       res
@@ -151,7 +151,7 @@ export default class AuthController {
 
   static getMe = async (req, res) => {
     try {
-      const user = await User.findById(req.user.id);
+      const user = await User.findById(req.user._id);
       res.json(user);
     } catch (error) {
       res
@@ -161,11 +161,18 @@ export default class AuthController {
   };
 
   static async getUserById(req, res) {
-    const user = await AuthService.getUserById(req.params.id);
-    new OK({
-      message: "Get user successfully",
-      metadata: user,
-    }).send(res);
+    try {
+      const user = await AuthService.getUserById(req.params.userId);
+      return res.status(200).json({
+        message: "Get user successfully",
+        data: user,
+      });
+    } catch (error) {
+      return res.status(404).json({
+        message: "User not found",
+        error: error.message,
+      });
+    }
   }
 
   static async forgotPassword(req, res) {

@@ -10,13 +10,26 @@ class PollRoute {
   }
 
   setupRoutes() {
-    this.router.post("/polls", CheckAuth.checkAuth, asyncHandler(PollController.createPoll));
-    this.router.get("/polls", asyncHandler(PollController.getAllPolls));
-    this.router.get("/polls/:id", asyncHandler(PollController.getPollById));
-    this.router.post("/polls/:pollId/options", asyncHandler(PollController.addOption));
-    this.router.delete("/polls/:pollId/options/:optionId", asyncHandler(PollController.removeOption));
-    this.router.post("/polls/:pollId/lock", asyncHandler(PollController.lockPoll));
-    this.router.post("/polls/:pollId/unlock", asyncHandler(PollController.unlockPoll));
+    this.router.post(
+      "/",
+      CheckAuth.checkAuth,
+      asyncHandler(PollController.createPoll)
+    );
+    this.router.get("/", asyncHandler(PollController.getAllPolls));
+    this.router.get("/:id", asyncHandler(PollController.getPollById));
+    this.router.post(
+      "/:pollId/options",
+      asyncHandler(PollController.addOption)
+    );
+    this.router.delete(
+      "/:pollId/options/:optionId",
+      asyncHandler(PollController.removeOption)
+    );
+    this.router.post("/:pollId/lock", asyncHandler(PollController.lockPoll));
+    this.router.post(
+      "/:pollId/unlock",
+      asyncHandler(PollController.unlockPoll)
+    );
   }
 
   getRouter() {
