@@ -37,6 +37,16 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /path/to/your/app
-            docker-compose pull
-            docker-compose up -d
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/poll-app:latest
+            docker stop poll-app
+            docker rm poll-app
+            docker run -d \
+            --name poll-app \
+            --network poll-network \
+            -p 127.0.0.1:3000:3000 \
+            -e MONGODB_URI=mongodb://mongo:27017/poll-app \
+            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            -e JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }} \
+            -e NODE_ENV=production \
+            --restart unless-stopped \
+            ${{ secrets.DOCKERHUB_USERNAME }}/poll-app:latest
