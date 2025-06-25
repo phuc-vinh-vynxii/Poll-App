@@ -1,0 +1,35 @@
+name: Deploy Docker image from Docker Hub
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build and Push Docker image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/poll-app:latest
+            docker stop poll-app || true
+            docker rm poll-app || true
+            docker run -d \
+              --name poll-app \
+              --network poll-network \
+              -p 127.0.0.1:3000:3000 \
+              -e MONGODB_URI=mongodb://mongo:27017/poll-app \
+              -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
+              -e JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }} \
+              -e NODE_ENV=production \
+              --restart unless-stopped \
+              ${{ secrets.DOCKERHUB_USERNAME }}/poll-app:latest
