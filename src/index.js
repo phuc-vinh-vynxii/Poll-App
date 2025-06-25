@@ -22,7 +22,7 @@ app.use(cookieParser());
 
 // Add a simple test route first
 app.get("/", (req, res) => {
-  res.json({ message: "Poll API is running test CI/CD!" });
+  res.json({ message: "Poll API is running test CI/CD! (Divide CD and CD progress)" });
 });
 
 router(app);
